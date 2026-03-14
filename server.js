@@ -7,17 +7,15 @@ const app = express();
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// Note: Make sure MONGO_URI is added in Render Environment Variables
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected ✅"))
 .catch(err => console.log("MongoDB Connection Error:", err));
 
-// 1. Static files (CSS, JS) serve karne ke liye jo bahar hain
+// 1. Static files (CSS, JS) serve karne ke liye
 app.use(express.static(path.join(__dirname, "../"))); 
 
-// 2. API Routes (Inhe pehle rakhte hain)
+// 2. API Routes
 const Book = require('./model/book');
 
 app.get("/api/books", async (req, res) => {
@@ -30,9 +28,13 @@ app.get("/api/books", async (req, res) => {
 });
 
 app.get("/api/books/search", async (req, res) => {
-  const { q } = req.query;
-  const books = await Book.find({ title: { $regex: q, $options: "i" } });
-  res.json(books);
+  try {
+    const { q } = req.query;
+    const books = await Book.find({ title: { $regex: q, $options: "i" } });
+    res.json(books);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/books", async (req, res) => {
@@ -46,10 +48,11 @@ app.post("/api/books", async (req, res) => {
   }
 });
 
-// 3. Root route → serves index.html (Ise API routes ke niche rakhein)
-app.get('/*', ...) {
+// 3. Root route → serves index.html
+// Corrected Syntax: Sabse niche ise hi rakhna
+app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, "../index.html"));
-};
+});
 
 // Port
 const PORT = process.env.PORT || 5000;
