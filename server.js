@@ -47,9 +47,9 @@ app.post("/api/books", async (req, res) => {
 });
 
 // 3. Root route → serves index.html (Ise API routes ke niche rakhein)
-app.get("*", (req, res) => {
+app.get('/*', ...) {
   res.sendFile(path.join(__dirname, "../index.html"));
-});
+};
 
 // Port
 const PORT = process.env.PORT || 5000;
