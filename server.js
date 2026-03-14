@@ -14,20 +14,12 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log("MongoDB Connected ✅"))
 .catch(err => console.log("MongoDB Connection Error:", err));
 
-// Serve static frontend
-app.use(express.static(path.join(__dirname, "public")));
+// 1. Static files (CSS, JS) serve karne ke liye jo bahar hain
+app.use(express.static(path.join(__dirname, "../"))); 
 
-// Routes
-
-// Root route → serves index.html
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Book model
+// 2. API Routes (Inhe pehle rakhte hain)
 const Book = require("./models/Book");
 
-// API: Get all books
 app.get("/api/books", async (req, res) => {
   try {
     const books = await Book.find();
@@ -37,14 +29,12 @@ app.get("/api/books", async (req, res) => {
   }
 });
 
-// API: Search books
 app.get("/api/books/search", async (req, res) => {
   const { q } = req.query;
   const books = await Book.find({ title: { $regex: q, $options: "i" } });
   res.json(books);
 });
 
-// API: Add book (Admin)
 app.post("/api/books", async (req, res) => {
   try {
     const { title, author, category, description, filePath } = req.body;
@@ -54,6 +44,11 @@ app.post("/api/books", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// 3. Root route → serves index.html (Ise API routes ke niche rakhein)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../index.html"));
 });
 
 // Port
