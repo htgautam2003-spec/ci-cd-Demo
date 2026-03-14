@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use(express.static(path.join(__dirname, "../"))); 
 
 // 2. API Routes (Inhe pehle rakhte hain)
-const Book = require("./models/Book");
+const Book = require("./model /Book");
 
 app.get("/api/books", async (req, res) => {
   try {
