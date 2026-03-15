@@ -1,51 +1,59 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
-const app = express();
+const dotenv = require("dotenv");
 
-// 1. Body parser
+dotenv.config();
+
+const app = express();
 app.use(express.json());
 
-// 2. MongoDB connection
-// Make sure MONGO_URI is in Render Environment Variables
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected ✅"))
-  .catch(err => console.log("MongoDB Connection Error ❌:", err));
-
-// 3. Static files serve karein (CSS, JS, Images)
-// path.join(__dirname, "../") ka matlab hai server folder se bahar nikal kar index.html dhoondna
-app.use(express.static(path.join(__dirname, "../"))); 
-
-// 4. API Routes
-const Book = require('./model/book');
-
-app.get("/api/books", async (req, res) => {
-  try {
-    const books = await Book.find();
-    res.json(books);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+.then(() => {
+    console.log("MongoDB Connected");
+})
+.catch((err) => {
+    console.log("MongoDB Error:", err);
 });
 
-app.post("/api/books", async (req, res) => {
-  try {
-    const book = new Book(req.body);
-    await book.save();
-    res.json({ message: "Book added successfully ✅" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// Sample Schema
+const UserSchema = new mongoose.Schema({
+    name: String,
+    email: String
 });
 
-// 5. Root Route (The "PathError" Fix)
-// Node v22 aur naye Express mein '*' sabse best chalta hai
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, "../index.html"));
+const User = mongoose.model("User", UserSchema);
+
+// Home Route
+app.get("/", (req, res) => {
+    res.send("Server is running successfully 🚀");
 });
 
-// 6. Port logic for Render
+// Create User API
+app.post("/user", async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get Users
+app.get("/users", async (req, res) => {
+    const users = await User.find();
+    res.json(users);
+});
+
+// 404 Route (Important Fix)
+app.use((req, res) => {
+    res.status(404).send("Route not found");
+});
+
+// PORT for Render
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} 🚀`);
+    console.log(`Server running on port ${PORT}`);
 });
